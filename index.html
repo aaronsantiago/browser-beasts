@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+	<meta name="attribution" content="Lucas Bebber for Codrops" />
+	<link rel="stylesheet" type="text/css" href="css/normalize.css" />
+	<link rel="stylesheet" type="text/css" href="css/demo.css" />
+	<link rel="stylesheet" type="text/css" href="css/style3.css" />
+	<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+</head>
+
+<style>
+
+body {
+  margin: 0px;
+  background-color: #00000000;
+}
+
+img {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  display: none;
+}
+
+#canvas {
+  width: 100%;
+  height: 100%;
+}
+
+</style>
+
+<body>
+<img id="img1"/>
+<img id="img2"/>
+<img id="img3"/>
+<canvas id="canvas"></canvas>
+</body>
+
+<script>
+
+let outlines = [];
+let fills = [];
+
+let parts = [
+  "Leg2",
+  "Head",
+  "Eye",
+  "Ear",
+  "Leg4",
+  "Tail",
+  "Body",
+  "Leg1",
+  "Leg3",
+  "Wing"
+];
+
+for (let i = 0; i < parts.length; i++) {
+  outlines[i] = new Image();
+  outlines[i].src = "winged1/" + parts[i] + ".png";
+  fills[i] = new Image();
+  fills[i].src = "winged1/" + parts[i] + "-colour.png";
+}
+
+let canvas = document.getElementById("canvas");
+let context = canvas.getContext("2d");
+context.imageSmoothingEnabled = true;
+let render = function() {
+  let width = 900;
+  let height = 900;
+  try {
+    context.clearRect( 0, 0, context.canvas.width, context.canvas.height);
+    for (let i = 0; i < fills.length; i++) {
+      context.drawImage(fills[i], 0, 0, width, height);
+      context.drawImage(outlines[i], 0, 0, width, height);
+    }
+  }
+  finally {
+    requestAnimationFrame(render);
+  }
+}
+requestAnimationFrame(render);
+
+document.onresize = function(){
+   const width = canvas.clientWidth;
+   const height = canvas.clientHeight;
+
+   // If it's resolution does not match change it
+   if (canvas.width !== width || canvas.height !== height) {
+     canvas.width = width*2;
+     canvas.height = height*2;
+     return true;
+   }
+};
+document.onresize();
+
+</script>
+
+</html>
