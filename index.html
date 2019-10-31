@@ -42,14 +42,19 @@ img {
   z-index: -1;
 }
 
+#container {
+  width: 100vmin;
+  height: 100vmin;
+  margin: auto;
+  position: relative;
+}
 </style>
 
 <body>
-<img id="img1"/>
-<img id="img2"/>
-<img id="img3"/>
-<canvas id="canvas"></canvas>
-<canvas id="canvas0"></canvas>
+<div id="container">
+  <canvas id="canvas"></canvas>
+  <canvas id="canvas0"></canvas>
+</div>
 </body>
 
 <script>
@@ -98,8 +103,8 @@ let context0 = canvas0.getContext("2d");
 
 let render = function() {
   let breatheOffset = Math.sin(Date.now()/500)*10;
-  let width = 2000;
-  let height = 2000 - breatheOffset;
+  let width = context.canvas.width;
+  let height = context.canvas.height - breatheOffset;
   let x = 0;
   let y = breatheOffset;
   try {
