@@ -133,14 +133,14 @@ let context0 = canvas0.getContext("2d");
 //context0.imageSmoothingEnabled = true;
 
 let render = function() {
-  let breatheOffset = Math.sin(Date.now()/500)*10;
-  let width = context.canvas.width;
-  let height = context.canvas.height - breatheOffset;
-  let x = 0;
-  let y = breatheOffset;
   try {
     context.clearRect( 0, 0, context.canvas.width, context.canvas.height);
     for (let i = 0; i < fills.length; i++) {
+      let breatheOffset = Math.sin(Date.now()/500 + i * .11)*context.canvas.height*(1 - .987);
+      let width = context.canvas.width;
+      let height = context.canvas.height - breatheOffset;
+      let x = 0;
+      let y = breatheOffset;
 
       context0.globalCompositeOperation = "source-over";
       context0.clearRect( 0, 0, context.canvas.width, context.canvas.height);
