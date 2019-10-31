@@ -14,12 +14,13 @@
 		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 		<![endif]-->
 </head>
+<script src="ua-parser.min.js"></script>
 
 <style>
 
 body {
   margin: 0px;
-  background-color: #00000000;
+  background-color: #343434;
 }
 
 img {
@@ -74,18 +75,40 @@ let parts = [
   "Leg3",
   "Wing"
 ];
-let colorParts = [
-  true,
-  true,
+let ua = new UAParser();
+let partColors = [
+  ua.getBrowser().name,
+  ua.getDevice().type,
   false,
-  true,
-  true,
-  true,
-  true,
-  true,
-  true,
-  true
+  ua.getDevice().type,
+  ua.getBrowser().name,
+  ua.getDevice().type,
+  ua.getOS().name,
+  ua.getBrowser().name,
+  ua.getBrowser().name,
+  ua.getOS().name
 ];
+let stringToColour = function(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  let colour = '#';
+  for (let i = 0; i < 3; i++) {
+    let value = (hash >> (i * 8)) & 0xFF;
+    colour += ('00' + value.toString(16)).substr(-2);
+  }
+  return colour;
+}
+
+for (let i = 0; i < partColors.length; i++) {
+  if (partColors[i]) {
+    partColors[i] = stringToColour(partColors[i]);
+  }
+  else {
+    partColors[i] = "#FFFFFF";
+  }
+}
 
 for (let i = 0; i < parts.length; i++) {
   outlines[i] = new Image();
@@ -112,18 +135,17 @@ let render = function() {
     for (let i = 0; i < fills.length; i++) {
 
       context0.globalCompositeOperation = "source-over";
-      if (colorParts[i]) {
-        context0.clearRect( 0, 0, context.canvas.width, context.canvas.height);
-        // draw color
-        context0.fillStyle = "#09f";
-        context0.fillRect(x, y, width, height);
-        
-        //// set composite mode
-        //context0.globalCompositeOperation = "multiply";
-        //context0.drawImage(fills[i], x, y, width, height);
-        
-        context0.globalCompositeOperation = "destination-in";
-      }
+      context0.clearRect( 0, 0, context.canvas.width, context.canvas.height);
+      // draw color
+      context0.fillStyle = partColors[i];
+      context0.fillRect(x, y, width, height);
+      
+      //// set composite mode
+      //context0.globalCompositeOperation = "multiply";
+      //context0.drawImage(fills[i], x, y, width, height);
+      
+      context0.globalCompositeOperation = "destination-in";
+      
       context0.drawImage(fills[i], x, y, width, height);
 
       context.drawImage(canvas0, 0, 0);
