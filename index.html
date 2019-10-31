@@ -32,6 +32,14 @@ img {
 #canvas {
   width: 100%;
   height: 100%;
+  position: absolute;
+}
+
+#canvas0 {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: -1;
 }
 
 </style>
@@ -41,6 +49,7 @@ img {
 <img id="img2"/>
 <img id="img3"/>
 <canvas id="canvas"></canvas>
+<canvas id="canvas0"></canvas>
 </body>
 
 <script>
@@ -60,6 +69,18 @@ let parts = [
   "Leg3",
   "Wing"
 ];
+let colorParts = [
+  true,
+  true,
+  false,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true
+];
 
 for (let i = 0; i < parts.length; i++) {
   outlines[i] = new Image();
@@ -69,17 +90,43 @@ for (let i = 0; i < parts.length; i++) {
 }
 
 let canvas = document.getElementById("canvas");
+let canvas0 = document.getElementById("canvas0");
 let context = canvas.getContext("2d");
-context.imageSmoothingEnabled = true;
+//context.imageSmoothingEnabled = true;
+let context0 = canvas0.getContext("2d");
+//context0.imageSmoothingEnabled = true;
+
 let render = function() {
-  let width = 900;
-  let height = 900;
+  let breatheOffset = Math.sin(Date.now()/500)*10;
+  let width = 2000;
+  let height = 2000 - breatheOffset;
+  let x = 0;
+  let y = breatheOffset;
   try {
     context.clearRect( 0, 0, context.canvas.width, context.canvas.height);
     for (let i = 0; i < fills.length; i++) {
-      context.drawImage(fills[i], 0, 0, width, height);
-      context.drawImage(outlines[i], 0, 0, width, height);
+
+      context0.globalCompositeOperation = "source-over";
+      if (colorParts[i]) {
+        context0.clearRect( 0, 0, context.canvas.width, context.canvas.height);
+        // draw color
+        context0.fillStyle = "#09f";
+        context0.fillRect(x, y, width, height);
+        
+        //// set composite mode
+        //context0.globalCompositeOperation = "multiply";
+        //context0.drawImage(fills[i], x, y, width, height);
+        
+        context0.globalCompositeOperation = "destination-in";
+      }
+      context0.drawImage(fills[i], x, y, width, height);
+
+      context.drawImage(canvas0, 0, 0);
+      context.drawImage(outlines[i], x, y, width, height);
     }
+  }
+  catch (e) {
+    console.log(e);
   }
   finally {
     requestAnimationFrame(render);
@@ -95,6 +142,8 @@ document.onresize = function(){
    if (canvas.width !== width || canvas.height !== height) {
      canvas.width = width*2;
      canvas.height = height*2;
+     canvas0.width = width*2;
+     canvas0.height = height*2;
      return true;
    }
 };
