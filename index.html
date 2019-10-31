@@ -175,10 +175,10 @@ document.onresize = function(){
 
    // If it's resolution does not match change it
    if (canvas.width !== width || canvas.height !== height) {
-     canvas.width = width*2;
-     canvas.height = height*2;
-     canvas0.width = width*2;
-     canvas0.height = height*2;
+     canvas.width = width;
+     canvas.height = height;
+     canvas0.width = width;
+     canvas0.height = height;
      return true;
    }
 };
