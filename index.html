@@ -60,7 +60,7 @@ img {
 
 <script>
 
-let numBodySets = 2;
+let numBodySets = 3;
 
 
 
@@ -140,6 +140,7 @@ for (let i = 0; i < partColors.length; i++) {
 }
 
 let getFilenamePrefix = function(str, i) {
+  return "winged" + (i + 1) + "/" + str;
   if (i == 0) {
     return str;
   }
@@ -156,9 +157,9 @@ let getFilenamePrefix = function(str, i) {
 for (let i = 0; i < parts.length; i++) {
   let partNum = Math.abs(stringToInt(partDeciders[i])) % numBodySets;
   outlines[i] = new Image();
-  outlines[i].src = "winged1/" + getFilenamePrefix(parts[i], partNum) + ".png";
+  outlines[i].src = getFilenamePrefix(parts[i], partNum) + ".png";
   fills[i] = new Image();
-  fills[i].src = "winged1/" + getFilenamePrefix(parts[i], partNum) + "-colour.png";
+  fills[i].src = getFilenamePrefix(parts[i], partNum) + "-colour.png";
 }
 
 let canvas = document.getElementById("canvas");
