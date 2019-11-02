@@ -87,31 +87,37 @@ let parts = [
   "Leg3",
   "Wing"
 ];
+
+// choose colors individually
 let ua = new UAParser();
 let partColors = [
-  ua.getBrowser().name + fontFingerprint,
-  ua.getDevice().type + fontFingerprint,
-  false,
-  ua.getDevice().type + fontFingerprint,
-  ua.getBrowser().name + fontFingerprint,
-  ua.getDevice().type + fontFingerprint,
-  ua.getOS().name + ua.getOS().name + fontFingerprint,
-  ua.getBrowser().name + fontFingerprint,
-  ua.getBrowser().name + fontFingerprint,
-  ua.getOS().name + ua.getOS().name + fontFingerprint
+  ua.getBrowser().name + fontFingerprint,               //Leg2
+  ua.getDevice().type + fontFingerprint,                //Head
+  false,                                                //Eye
+  ua.getDevice().type + fontFingerprint,                //Ear
+  ua.getBrowser().name + fontFingerprint,               //Leg4
+  ua.getDevice().type + fontFingerprint,                //Tail
+  ua.getOS().name + ua.getOS().name + fontFingerprint,  //Body
+  ua.getBrowser().name + fontFingerprint,               //Leg1
+  ua.getBrowser().name + fontFingerprint,               //Leg3
+  ua.getOS().name + ua.getOS().name + fontFingerprint   //Wing
 ];
+
+// choose parts individually
 let partDeciders = [
-  ua.getBrowser().name,
-  ua.getDevice().type,
-  ua.getOS().name,
-  ua.getDevice().type,
-  ua.getBrowser().name,
-  ua.getDevice().type,
-  ua.getOS().name + ua.getOS().name,
-  ua.getBrowser().name,
-  ua.getBrowser().name,
-  ua.getOS().name + ua.getOS().name
+  ua.getBrowser().name,                //Leg2
+  ua.getDevice().type,                 //Head
+  ua.getOS().name,                     //Eye
+  ua.getDevice().type,                 //Ear
+  ua.getBrowser().name,                //Leg4
+  ua.getDevice().type,                 //Tail
+  ua.getOS().name + ua.getOS().name,   //Body
+  ua.getBrowser().name,                //Leg1
+  ua.getBrowser().name,                //Leg3
+  ua.getOS().name + ua.getOS().name    //Wing
 ];
+
+// helper functions to hash strings to different values
 let stringToColour = function(str) {
   let hash = stringToInt(str);
   let colour = '#';
@@ -130,6 +136,12 @@ let stringToInt = function(str) {
   return hash;
 }
 
+// generate filename prefix (minus .png and -colour.png) from index and part name
+let getFilenamePrefix = function(str, i) {
+  return "winged" + (i + 1) + "/" + str;
+}
+
+// generate partColors array
 for (let i = 0; i < partColors.length; i++) {
   if (partColors[i]) {
     partColors[i] = stringToColour(partColors[i]);
@@ -139,21 +151,7 @@ for (let i = 0; i < partColors.length; i++) {
   }
 }
 
-let getFilenamePrefix = function(str, i) {
-  return "winged" + (i + 1) + "/" + str;
-  if (i == 0) {
-    return str;
-  }
-  if (/^\d+$/.test(str[str.length - 1])) {
-    let digit = str[str.length - 1];
-    str = str.slice(0, str.length - 1);
-    str = str + (i + 1) + "-" + digit;
-    return str;
-  }
-
-  return str + (i + 1);
-}
-
+// load images
 for (let i = 0; i < parts.length; i++) {
   let partNum = Math.abs(stringToInt(partDeciders[i])) % numBodySets;
   outlines[i] = new Image();
@@ -162,6 +160,7 @@ for (let i = 0; i < parts.length; i++) {
   fills[i].src = getFilenamePrefix(parts[i], partNum) + "-colour.png";
 }
 
+// initialize canvases
 let canvas = document.getElementById("canvas");
 let canvas0 = document.getElementById("canvas0");
 let context = canvas.getContext("2d");
@@ -174,20 +173,22 @@ let render = function() {
     context.clearRect( 0, 0, context.canvas.width, context.canvas.height);
     for (let i = 0; i < fills.length; i++) {
       let breatheOffset = Math.sin(Date.now()/500 + i * .11)*context.canvas.height*(1 - .987);
+
+      // draw values for context
       let width = context.canvas.width;
       let height = context.canvas.height - breatheOffset;
       let x = 0;
       let y = breatheOffset;
 
+      // use offscreen canvas to recolor
       context0.globalCompositeOperation = "source-over";
       context0.clearRect( 0, 0, context.canvas.width, context.canvas.height);
-      // draw color
       context0.fillStyle = partColors[i];
       context0.fillRect(x, y, width, height);
       
-      //// set composite mode
-      //context0.globalCompositeOperation = "multiply";
-      //context0.drawImage(fills[i], x, y, width, height);
+      // set composite mode
+      context0.globalCompositeOperation = "multiply";
+      context0.drawImage(fills[i], x, y, width, height);
       
       context0.globalCompositeOperation = "destination-in";
       
@@ -200,17 +201,18 @@ let render = function() {
   catch (e) {
     console.log(e);
   }
+  // ensure rendering continues in case of an error
   finally {
     requestAnimationFrame(render);
   }
 }
 requestAnimationFrame(render);
 
+// resize canvases when screen size is changed, force resize on page load
 document.onresize = function(){
    const width = canvas.clientWidth;
    const height = canvas.clientHeight;
 
-   // If it's resolution does not match change it
    if (canvas.width !== width || canvas.height !== height) {
      canvas.width = width;
      canvas.height = height;
