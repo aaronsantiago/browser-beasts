@@ -15,6 +15,7 @@
 		<![endif]-->
 </head>
 <script src="ua-parser.min.js"></script>
+<script src="randomColor.min.js"></script>
 
 <style>
 
@@ -64,8 +65,8 @@ img {
 let numBodySets = 3;
 
 // how many times and how much to "fuzz" the fills upon caching
-let fuzzIterations = 0;
-let fuzzDistance = 2;
+let fuzzIterations = 10;
+let fuzzDistance = 4;
 
 
 
@@ -95,17 +96,18 @@ let parts = [
 
 // choose colors individually
 let ua = new UAParser();
+let fullFingerprint = ua.getBrowser().name + ua.getDevice().type + ua.getOS().name + fontFingerprint;
 let partColors = [
-  ua.getBrowser().name + fontFingerprint,               //Leg2
-  ua.getDevice().type + fontFingerprint,                //Head
-  false,                                                //Eye
-  ua.getDevice().type + fontFingerprint,                //Ear
-  ua.getBrowser().name + fontFingerprint,               //Leg4
-  ua.getDevice().type + fontFingerprint,                //Tail
-  ua.getOS().name + ua.getOS().name + fontFingerprint,  //Body
-  ua.getBrowser().name + fontFingerprint,               //Leg1
-  ua.getBrowser().name + fontFingerprint,               //Leg3
-  ua.getOS().name + ua.getOS().name + fontFingerprint   //Wing
+  fullFingerprint,  //Leg2
+  fullFingerprint,  //Head
+  false,            //Eye
+  fullFingerprint,  //Ear
+  fullFingerprint,  //Leg4
+  fullFingerprint,  //Tail
+  fullFingerprint,  //Body
+  fullFingerprint,  //Leg1
+  fullFingerprint,  //Leg3
+  fullFingerprint   //Wing
 ];
 
 // choose parts individually
@@ -124,13 +126,7 @@ let partDeciders = [
 
 // helper functions to hash strings to different values
 let stringToColour = function(str) {
-  let hash = stringToInt(str);
-  let colour = '#';
-  for (let i = 0; i < 3; i++) {
-    let value = (hash >> (i * 8)) & 0xFF;
-    colour += ('00' + value.toString(16)).substr(-2);
-  }
-  return colour;
+  return randomColor({seed: str});
 }
 let stringToInt = function(str) {
   str = "baseHashStarterAawyfhtaoywufhtoaywufhtoaywufhtoaywufhtoayuwfhtoayuwhftoyauhfw" + str;
@@ -177,20 +173,21 @@ for (let i = 0; i < parts.length; i++) {
       context0.fillRect(0, 0, canvas.width, canvas.height);
       
       // "fuzz" fill into cachedPartCanvas
-      cachedContext.globalCompositeOperation = "lighten";
+      cachedContext.globalCompositeOperation = "source-over";
       for (let j = 0; j < fuzzIterations; j++) {
         let theta = Math.PI * 2 * j /fuzzIterations;
         cachedContext.drawImage(fills[i], Math.cos(theta) * fuzzDistance, Math.sin(theta) * fuzzDistance, canvas.width, canvas.height);
       }
       cachedContext.drawImage(fills[i], 0, 0, canvas.width, canvas.height);
 
-      context0.globalCompositeOperation = "multiply";
+      context0.globalCompositeOperation = "screen";
       context0.drawImage(cachedPartCanvases[i], 0, 0, canvas.width, canvas.height);
       
       context0.globalCompositeOperation = "destination-in";
-      cachedContext.globalCompositeOperation = "hard-light";
+      cachedContext.globalCompositeOperation = "source-over";
      
       context0.drawImage(fills[i], 0, 0, canvas.width, canvas.height);
+      cachedContext.clearRect( 0, 0, canvas.width, canvas.height);
       cachedContext.drawImage(canvas0, 0, 0);
       cachedContext.drawImage(outlines[i], 0, 0, canvas.width, canvas.height);
       context0.clearRect( 0, 0, canvas.width, canvas.height);
