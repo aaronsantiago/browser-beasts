@@ -242,7 +242,7 @@ let render = function() {
   try {
     context.clearRect( 0, 0, context.canvas.width, context.canvas.height);
     for (let i = 0; i < fills.length; i++) {
-      let breatheOffset = Math.sin(Date.now()/500 + i * .11)*context.canvas.height*(1 - .987);
+      let breatheOffset = Math.sin(Date.now()/500 + i * .11 + (stringToInt(fullFingerprint) % 10000) )*context.canvas.height*(1 - .987);
 
       // draw values for context
       let width = context.canvas.width;
