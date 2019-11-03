@@ -61,7 +61,18 @@ img {
 
 <script>
 // 1:shinyRatio - ratio of shiny parts to nonshiny parts, must be an integer
-let shinyRatio = 4;
+let shinyRatios = [
+  20, //Leg2
+  4, //Head
+  0, //Eye
+  4, //Ear
+  20, //Leg4
+  4, //Tail
+  10, //Body
+  20, //Leg1
+  20, //Leg3
+  4 //Wing
+];
 
 // total number of body sets to choose from
 let numBodySets = 3;
@@ -99,6 +110,8 @@ let parts = [
 // choose colors individually
 let ua = new UAParser();
 let fullFingerprint = ua.getBrowser().name + ua.getDevice().type + ua.getOS().name + fontFingerprint;
+    // increase hash variance by elongating the string to be hashed
+fullFingerprint = fullFingerprint + fullFingerprint + fullFingerprint;
 let partColors = [
   fullFingerprint,  //Leg2
   fullFingerprint,  //Head
@@ -147,7 +160,10 @@ let getFilenamePrefix = function(str, i) {
 // generate partColors array
 for (let i = 0; i < partColors.length; i++) {
   if (partColors[i]) {
-    let shinyPart = ((stringToInt(fullFingerprint + i + "arst" + i) % (shinyRatio + 1)) == 0) ? stringToInt(fullFingerprint + i + "arst" + i) : "1";
+    let shinyPart = 
+        ((stringToInt(fullFingerprint + i + "arst" + i) % (shinyRatios[i] + 1)) == 0)
+            ? stringToInt(fullFingerprint + i + "arst" + i)
+            : "1";
     console.log(shinyPart);
     partColors[i] = stringToColour(partColors[i] + shinyPart);
   }
