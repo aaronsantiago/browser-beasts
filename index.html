@@ -60,7 +60,12 @@ img {
 
 <script>
 
+// total number of body sets to choose from
 let numBodySets = 3;
+
+// how many times and how much to "fuzz" the fills upon caching
+let fuzzIterations = 0;
+let fuzzDistance = 2;
 
 
 
@@ -151,13 +156,59 @@ for (let i = 0; i < partColors.length; i++) {
   }
 }
 
-// load images
+// load images, create cached render when images are loaded
+let cachedPartCanvases = [];
 for (let i = 0; i < parts.length; i++) {
   let partNum = Math.abs(stringToInt(partDeciders[i])) % numBodySets;
+  
+  let outlineLoaded = false;
+  let fillLoaded = false;
+  let onLoad = function() {
+    if (outlineLoaded && fillLoaded) {
+      cachedPartCanvases[i] = document.createElement('canvas');
+      cachedPartCanvases[i].setAttribute('width', canvas.width);
+      cachedPartCanvases[i].setAttribute('height', canvas.height);
+      
+      let cachedContext = cachedPartCanvases[i].getContext("2d");
+      // use offscreen canvas to hold new fill color
+      context0.globalCompositeOperation = "source-over";
+      context0.clearRect( 0, 0, canvas.width, canvas.height);
+      context0.fillStyle = partColors[i];
+      context0.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // "fuzz" fill into cachedPartCanvas
+      cachedContext.globalCompositeOperation = "lighten";
+      for (let j = 0; j < fuzzIterations; j++) {
+        let theta = Math.PI * 2 * j /fuzzIterations;
+        cachedContext.drawImage(fills[i], Math.cos(theta) * fuzzDistance, Math.sin(theta) * fuzzDistance, canvas.width, canvas.height);
+      }
+      cachedContext.drawImage(fills[i], 0, 0, canvas.width, canvas.height);
+
+      context0.globalCompositeOperation = "multiply";
+      context0.drawImage(cachedPartCanvases[i], 0, 0, canvas.width, canvas.height);
+      
+      context0.globalCompositeOperation = "destination-in";
+      cachedContext.globalCompositeOperation = "hard-light";
+     
+      context0.drawImage(fills[i], 0, 0, canvas.width, canvas.height);
+      cachedContext.drawImage(canvas0, 0, 0);
+      cachedContext.drawImage(outlines[i], 0, 0, canvas.width, canvas.height);
+      context0.clearRect( 0, 0, canvas.width, canvas.height);
+    }
+  };
+      
   outlines[i] = new Image();
   outlines[i].src = getFilenamePrefix(parts[i], partNum) + ".png";
+  outlines[i].onload = function() {
+    outlineLoaded = true;
+    onLoad();
+  };
   fills[i] = new Image();
   fills[i].src = getFilenamePrefix(parts[i], partNum) + "-colour.png";
+  fills[i].onload = function() {
+    fillLoaded = true;
+    onLoad();
+  };
 }
 
 // initialize canvases
@@ -179,23 +230,7 @@ let render = function() {
       let height = context.canvas.height - breatheOffset;
       let x = 0;
       let y = breatheOffset;
-
-      // use offscreen canvas to recolor
-      context0.globalCompositeOperation = "source-over";
-      context0.clearRect( 0, 0, context.canvas.width, context.canvas.height);
-      context0.fillStyle = partColors[i];
-      context0.fillRect(x, y, width, height);
-      
-      // set composite mode
-      context0.globalCompositeOperation = "multiply";
-      context0.drawImage(fills[i], x, y, width, height);
-      
-      context0.globalCompositeOperation = "destination-in";
-      
-      context0.drawImage(fills[i], x, y, width, height);
-
-      context.drawImage(canvas0, 0, 0);
-      context.drawImage(outlines[i], x, y, width, height);
+      context.drawImage(cachedPartCanvases[i], x, y, width, height);
     }
   }
   catch (e) {
