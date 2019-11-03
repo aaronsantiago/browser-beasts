@@ -184,8 +184,8 @@ for (let i = 0; i < parts.length; i++) {
       }
       cachedContext.drawImage(fills[i], 0, 0, canvas.width, canvas.height);
 
-      // this is the magic, do a "screen" op between fuzzed fill and cachedPartCanvas to generate the proper color
-      context0.globalCompositeOperation = "screen";
+      // this is the magic, do a "luminosity" op between fuzzed fill and cachedPartCanvas to generate the proper color
+      context0.globalCompositeOperation = "luminosity";
       context0.drawImage(cachedPartCanvases[i], 0, 0, canvas.width, canvas.height);
       
       // use "destination-in" to erase the fuzz and the full-canvas fill, draw only the main fill pixels
