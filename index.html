@@ -60,6 +60,8 @@ img {
 </body>
 
 <script>
+// 1:shinyRatio - ratio of shiny parts to nonshiny parts, must be an integer
+let shinyRatio = 4;
 
 // total number of body sets to choose from
 let numBodySets = 3;
@@ -126,7 +128,7 @@ let partDeciders = [
 
 // helper functions to hash strings to different values
 let stringToColour = function(str) {
-  return randomColor({seed: str});
+  return randomColor({luminosity: 'dark', seed: str});
 }
 let stringToInt = function(str) {
   str = "baseHashStarterAawyfhtaoywufhtoaywufhtoaywufhtoaywufhtoayuwfhtoayuwhftoyauhfw" + str;
@@ -134,7 +136,7 @@ let stringToInt = function(str) {
   for (let i = 0; i < str.length; i++) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return hash;
+  return Math.abs(hash);
 }
 
 // generate filename prefix (minus .png and -colour.png) from index and part name
@@ -145,7 +147,9 @@ let getFilenamePrefix = function(str, i) {
 // generate partColors array
 for (let i = 0; i < partColors.length; i++) {
   if (partColors[i]) {
-    partColors[i] = stringToColour(partColors[i]);
+    let shinyPart = ((stringToInt(fullFingerprint + i + "arst" + i) % (shinyRatio + 1)) == 0) ? stringToInt(fullFingerprint + i + "arst" + i) : "1";
+    console.log(shinyPart);
+    partColors[i] = stringToColour(partColors[i] + shinyPart);
   }
   else {
     partColors[i] = "#FFFFFF";
@@ -155,7 +159,7 @@ for (let i = 0; i < partColors.length; i++) {
 // load images, create cached render when images are loaded
 let cachedPartCanvases = [];
 for (let i = 0; i < parts.length; i++) {
-  let partNum = Math.abs(stringToInt(partDeciders[i])) % numBodySets;
+  let partNum = stringToInt(partDeciders[i]) % numBodySets;
   
   let outlineLoaded = false;
   let fillLoaded = false;
@@ -180,13 +184,16 @@ for (let i = 0; i < parts.length; i++) {
       }
       cachedContext.drawImage(fills[i], 0, 0, canvas.width, canvas.height);
 
+      // this is the magic, do a "screen" op between fuzzed fill and cachedPartCanvas to generate the proper color
       context0.globalCompositeOperation = "screen";
       context0.drawImage(cachedPartCanvases[i], 0, 0, canvas.width, canvas.height);
       
+      // use "destination-in" to erase the fuzz and the full-canvas fill, draw only the main fill pixels
       context0.globalCompositeOperation = "destination-in";
-      cachedContext.globalCompositeOperation = "source-over";
-     
       context0.drawImage(fills[i], 0, 0, canvas.width, canvas.height);
+
+      // copy offscreen canvas to the cache after clearing, then draw the outline over it. reset offscreen canvas after
+      cachedContext.globalCompositeOperation = "source-over";
       cachedContext.clearRect( 0, 0, canvas.width, canvas.height);
       cachedContext.drawImage(canvas0, 0, 0);
       cachedContext.drawImage(outlines[i], 0, 0, canvas.width, canvas.height);
